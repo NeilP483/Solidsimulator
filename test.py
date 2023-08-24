@@ -11,7 +11,11 @@ draw_radius = 5
 original_speed = 0
 dt = 1/20.0
 m = 1.00
-strength = 50
+strength = 15
+v_walls = 1
+
+def mag(vec):
+    return math.sqrt(vec[0]**2 + vec[1]**2)
 
 def create_circle():
     width = screen.get_width()
@@ -28,13 +32,17 @@ def draw_circle(circle):
 def update_circle(circle):
     pos = circle[0]
     vel = circle[1]
+    vel[1] += 0.98 * dt
     pos[0] += vel[0] * dt
     pos[1] += vel[1] * dt
+    speed = mag(vel)
     if(pos[0] < 0 or pos[0] >= screen.get_width()):
-        vel[0] *= -1
+        vel[0] = -vel[0] / speed * (0.5*speed + 1.5*v_walls) / 2 
+        vel[1] = vel[1] / speed * (0.5*speed + 1.5*v_walls) / 2 
         pos[0] = 0 if pos[0] < 0 else screen.get_width() - 1
     if(pos[1] < 0 or pos[1] >= screen.get_height()):
-        vel[1] *= -1
+        vel[1] = -vel[1] / speed * (0.5*speed + 1.5*v_walls) / 2 
+        vel[0] = vel[0] / speed * (0.5*speed + 1.5*v_walls) / 2 
         pos[1] = 0 if pos[1] < 0 else screen.get_height() - 1
 def collide_circle(c1, c2):
     charge_1 = 1 if c1[2] else -1
@@ -42,7 +50,7 @@ def collide_circle(c1, c2):
     pos_2 = c2[0]
     charge_2 = 1 if c2[2] else -1
     r = math.sqrt((pos_1[0] - pos_2[0]) ** 2 + (pos_1[1] - pos_2[1]) ** 2)
-    if r < draw_radius/2.0:
+    if r == 0:
         return
     #rep_f = 2 * draw_radius / r / r / r + 1 / r / r
     rep_f = strength * (2 * draw_radius / r / r / r - 1 / r / r)
@@ -74,6 +82,6 @@ while running:
     # flip() the display to put your work on screen
     pygame.display.flip()
 
-    clock.tick(60)  # limits FPS to 60
+    clock.tick(1000)  # limits FPS to 60
 
 pygame.quit()
